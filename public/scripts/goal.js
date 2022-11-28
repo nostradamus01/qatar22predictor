@@ -160,6 +160,15 @@ if (mainContainer) {
             }
         });
 
+        menu.addEventListener('click', (e) => {
+            const pointsCmp = menu.querySelector('.menu');
+            if (!(e.target === pointsCmp || pointsCmp.contains(e.target))) {
+                menu.classList.remove('opened');
+                headerCmp.classList.remove('showed');
+                menuBtn.classList.remove('opened');
+            }
+        });
+
         const goalsCount = document.querySelectorAll('.goals-count');
         const box = document.querySelectorAll('.open-numbers');
         for (let i = 0; i < goalsCount.length; i++) {
