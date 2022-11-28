@@ -55,6 +55,10 @@ if (mainContainer) {
             return prediction.userId === currentUser.userId;
         });
         let allPoints = 0;
+        allMatches.sort((a, b) => {
+            return a.matchId - b.matchId;
+        });
+        debugger;
         allMatches.forEach((match) => {
             const currentPrediction = currentUserPredictions.find(prediction => prediction.matchId === match.matchId);
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
