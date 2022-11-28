@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../scripts/defaultMethods.js"></script>
+    <link rel="stylesheet" href="../styles/index.css">
+    <link rel="stylesheet" href="../styles/login.css">
+	<link rel="shortcut icon" href="../images/logFav.png" type="image/x-icon">
+    <title>Login</title>
+</head>
+<body>
+    <div class="loader">
+		<div class="loader-cmp">
+			<div class="circle cyan"></div>
+			<div class="circle magenta"></div>
+			<div class="circle yellow"></div>
+		</div>
+	</div>
+
+    <div class="login-content">
+		<div class="login-form-container">
+			<div class="user-img-container">
+				<div class="user-img">
+					<img src="../images/user.png" alt="user">
+				</div>
+			</div>
+			<form id="loginForm">
+				<div>
+					<select class="custom-select" name="username">
+						<option class="custom-select" value="null">Select yourself</option>
+					</select>
+					<div class="pin">
+						<input class="pin-input" type="number" name="pinCode" min="0" max="9999">
+					</div>
+					<p class="message-box" id="loginMsg"></p>
+				</div>
+			</form>
+		</div>
+	</div>
+
+    <!-- <script src="../scripts/index.js"></script> -->
+    <script src="../scripts/login.js"></script>
+</body>
+</html>
