@@ -49,47 +49,79 @@ const mainContainer = document.querySelector('main.main');
 if (mainContainer) {
     const renderSite = async () => {
         const allData = await (await sendPostRequest(createUrl('/getAllData'), {})).json();
-        const { allUsers, allMatches, allTeams, allPredictions, allResults } = allData;
-        const currentUser = allUsers.find(user => userCookie.username === user.username);
-        const currentUserPredictions = allPredictions.filter((prediction) => {
-            return prediction.userId === currentUser.userId;
-        });
-        let allPoints = 0;
+        const { allUsers, allMatches, allPredictions, allResults } = allData;
+        
         allMatches.sort((a, b) => {
             return a.matchId - b.matchId;
         });
+
+        const usersWPred = [];
+        allUsers.forEach((user) => {
+            const pred = allPredictions.filter(prediction=> user.userId === prediction.userId);
+            user.predictions = pred;
+            usersWPred.push(user);
+        });
+
+        usersWPred.forEach((user) => {
+            let allPoints = 0;
+            user.predictions.forEach((prediction) => {
+                const result = allResults.find((result)=> result.matchId === prediction.matchId)
+                if (result.finished === 'yes') {
+                    let pg1 = prediction.g1,
+                        pg2 = prediction.g2;
+                    let og1 = result.g1,
+                        og2 = result.g2;
+                    let points = 0;
+                    if (pg1 === og1 && pg2 === og2) {
+                        points = 5;         
+                    } else if ((pg1 - pg2) === (og1 - og2)) {
+                        points = 2;
+                    } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
+                        points = 1;
+                    }
+                    prediction.points = points;
+                    allPoints += points; 
+                }
+            });
+            user.points = allPoints;
+        });
+
+        const currentUser = usersWPred.find((user) => user.username === userCookie.username);
+        const pointCMP = document.querySelector('.pointsCMP');
+        usersWPred.sort((a,b) => {
+            return b.points - a.points;
+        });
+        usersWPred.forEach((user)=>{
+            if (user.userId === currentUser.userId) {
+                pointCMP.insertAdjacentHTML('beforeend',`
+                    <tr class="all-points" style="color: #ad214d;">
+                        <td style="padding-right:30px">${user.name_tr}</td>
+                        <td>${user.points}</td>
+                    </tr>
+                `);
+            } else {
+                pointCMP.insertAdjacentHTML('beforeend',`
+                    <tr class="all-points">
+                        <td style="padding-right:30px">${user.name_tr}</td>
+                        <td>${user.points}</td>
+                    </tr>
+                `);
+            }
+        });
         allMatches.forEach((match) => {
-            const currentPrediction = currentUserPredictions.find(prediction => prediction.matchId === match.matchId);
+            const currentPrediction = currentUser.predictions.find((prediction) => prediction.matchId === match.matchId);
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
             const finished = currentMatchResult.finished === 'yes';
             let pointsCmp = `<span class="line">-</span>`;
             if (finished) {
                 const originalScore = `${currentMatchResult.g1} - ${currentMatchResult.g2}`;
-                const og1 = currentMatchResult.g1;
-                const og2 = currentMatchResult.g2;
-                const pg1 = currentPrediction.g1;
-                const pg2 = currentPrediction.g2;
-                const pointsObj = {
-                    points: 0,
-                    text: '+0 Point' 
-                }
-                if (pg1 === og1 && pg2 === og2) {
-                    pointsObj.points = 5;
-                    pointsObj.text = '+5 Points'
-                } else if ((pg1 - pg2) === (og1 - og2)) {
-                    pointsObj.points = 2;
-                    pointsObj.text = '+2 Points'
-                } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
-                    pointsObj.points = 1;
-                    pointsObj.text = '+1 Points'
-                }
+                let pointsText = `+${currentPrediction.points} Point${currentPrediction.points > 1 ? 's' : ''}`;
                 pointsCmp = `
                     <div class="poisult">
-                        <div class="points">${pointsObj.text}</div>
+                        <div class="points">${pointsText}</div>
                         <div class="result">${originalScore}</div>
                     </div>
                 `;
-                allPoints += pointsObj.points;
             }
             
             const matchTime = new Date(match.date);
@@ -112,8 +144,22 @@ if (mainContainer) {
                 match.unchangeable = true;
             }
         });
-        const allPointsComponent = document.querySelector('.all-points');
-        allPointsComponent.innerHTML = `${allPoints} Points`;
+
+        const menuBtn = document.querySelector('.bg-img');
+        const headerCmp = document.querySelector('.header');
+        const menu = document.querySelector('.navbar');
+        headerCmp.addEventListener('click', (e) => {
+            if (e.target === menuBtn) {
+                menu.classList.toggle('opened');
+                headerCmp.classList.toggle('showed');
+                menuBtn.classList.toggle('opened');
+            } else {
+                menu.classList.remove('opened');
+                headerCmp.classList.remove('showed');
+                menuBtn.classList.remove('opened');
+            }
+        });
+
         const goalsCount = document.querySelectorAll('.goals-count');
         const box = document.querySelectorAll('.open-numbers');
         for (let i = 0; i < goalsCount.length; i++) {

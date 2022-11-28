@@ -208,13 +208,11 @@ app.post('/getAllData', async (req, res) => {
             users.forEach(user => {
                 delete user.pinCode;
             });
-            const teams = await client.db('fifa22cup').collection('teams').find().toArray();
             const matches = await client.db('fifa22cup').collection('matches').find().toArray();
             const predictions = await client.db('fifa22cup').collection('predictions').find().toArray();
             const results = await client.db('fifa22cup').collection('results').find().toArray();
             res.send({
                 allUsers: users,
-                allTeams: teams,
                 allMatches: matches,
                 allPredictions: predictions,
                 allResults: results
