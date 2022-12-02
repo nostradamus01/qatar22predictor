@@ -5,7 +5,7 @@ function PlayoffPage() {
     (async () => {
         const createCard = (data) => {
             return `
-                <div class="card" data-time="${data.time}">
+                <div class="card" data-time="${data.time}" data-match=${data.matchNum}>
                     <div class="date-container">
                         <span class="date">${data.date}</span>
                     </div>
@@ -19,14 +19,14 @@ function PlayoffPage() {
                         <div class="goals-container">
                             <div class="goals">
                                 <div class="goal-conatiner ${data.isChangable ? 'changable' : ''}">
-                                    <div class="goals-count">
+                                    <div class="goals-count" data-team="${1}">
                                         ${data.team1Goals}
                                     </div>
                                     <div class="goals-chooser" data-match="${data.matchNum}" data-team="${1}"></div>
                                 </div>
                                 <div class="seperator">:</div>
                                 <div class="goal-conatiner ${data.isChangable ? 'changable' : ''}">
-                                    <div class="goals-count">
+                                    <div class="goals-count" data-team="${2}">
                                         ${data.team2Goals}
                                     </div>
                                     <div class="goals-chooser" data-match="${data.matchNum}" data-team="${2}"></div>
@@ -44,8 +44,21 @@ function PlayoffPage() {
                             <div class="team-name">${data.team2Code}</div>
                         </div>
                     </div>
-                    <div class="others-predictions-container">
-            
+                    <div class="additional-predictions ${!data.hasAdditionalInfo ? 'hidden' : ''} ${data.isChangable ? 'changable' : ''}" data-match="${data.matchNum}">
+                        <div class="container">
+                            <select class="select-css" ${!data.isChangable ? 'disabled' : ''} data-match="${data.matchNum}">
+                                <option disabled ${!(data.winnerTeamCode.length > 0) ? 'selected' : ''} hidden>Ով կանցնի (Кто пройдет)</option>
+                                <option value="${data.team1Code.toLowerCase()}" ${data.team1Code.toLowerCase() === data.winnerTeamCode ? 'selected' : ''}>${data.team1Code}</option>
+                                <option value="${data.team2Code.toLowerCase()}" ${data.team2Code.toLowerCase() === data.winnerTeamCode ? 'selected' : ''}>${data.team2Code}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span class="switch">
+                            <h4 class="pen">Будут пенальти</h4>
+                                <input class="switch-round" ${data.willPenalties ? 'checked' : ''} id="switch-round-${data.matchNum}" type="checkbox" data-match="${data.matchNum}" ${!data.isChangable ? 'disabled' : ''}/>
+                                <label for="switch-round-${data.matchNum}"></label>
+                            </span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -97,6 +110,7 @@ function PlayoffPage() {
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
             const finished = currentMatchResult.finished === 'yes';
             const timeNow = new Date();
+            const hasAdditionalInfo = currentPrediction.g1 && (currentPrediction.g1 === currentPrediction.g2);
 
             const matchTime = new Date(match.date);
             const matchData = {
@@ -113,7 +127,10 @@ function PlayoffPage() {
                 pointsText: '',
                 originalG1: '',
                 originalG2: '',
-                isChangable: matchTime.getTime() > timeNow.getTime()
+                isChangable: matchTime.getTime() > timeNow.getTime(),
+                hasAdditionalInfo,
+                winnerTeamCode: currentPrediction.winnerTeamCode,
+                willPenalties: currentPrediction.willPenalties === 'yes'
             }
 
             if (finished) {
@@ -142,6 +159,17 @@ function PlayoffPage() {
                     const teamNum = goalsChooser.getAttribute('data-team');
                     obj[`g${teamNum}`] = i;
                     goalsChooser.classList.remove('expanded');
+                    const currentCard = mainEl.querySelector(`div.card[data-match='${obj.matchId}']`);
+                    if (currentCard) {
+                        const goal1 = currentCard.querySelector('div.goals-count[data-team="1"]').innerText;
+                        const goal2 = currentCard.querySelector('div.goals-count[data-team="2"]').innerText;
+                        const addit = currentCard.querySelector(`.additional-predictions`);
+                        if (goal1 === goal2) {
+                            addit.classList.remove('hidden');
+                        } else {
+                            addit.classList.add('hidden');
+                        }
+                    }
                     await sendPostRequest(createUrl('/setPrediction'), obj);
                 })
                 goalsChooser.appendChild(el);
@@ -149,11 +177,37 @@ function PlayoffPage() {
 
             goalsCount.addEventListener('click', () => {
                 const allGoalsChoosers = mainEl.querySelectorAll('.goals-chooser');
-                allGoalsChoosers.forEach((chooser) => {
-                    chooser.classList.remove('expanded');
-                });
-                goalsChooser.classList.add('expanded');
+                if (goalsChooser.classList.contains('expanded')) {
+                    goalsChooser.classList.remove('expanded');
+                } else {
+                    allGoalsChoosers.forEach((chooser) => {
+                        chooser.classList.remove('expanded');
+                    });
+                    goalsChooser.classList.add('expanded');
+                }
             });
+        });
+
+        const additionalPreds = mainEl.querySelectorAll('.additional-predictions.changable');
+        additionalPreds.forEach(pred => {
+            const selectTeam = pred.querySelector('.select-css');
+            const penal = pred.querySelector('.switch-round');
+            selectTeam.addEventListener('input', async (e) => {
+                const obj = {
+                    userId: currentUser.userId,
+                    matchId: +selectTeam.getAttribute('data-match')
+                };
+                obj['winnerTeamCode'] = e.target.value;
+                await sendPostRequest(createUrl('/setPrediction'), obj);
+            })
+            penal.addEventListener('input', async (e) => {
+                const obj = {
+                    userId: currentUser.userId,
+                    matchId: +penal.getAttribute('data-match')
+                };
+                obj['willPenalties'] = e.target.checked ? 'yes' : 'no';
+                await sendPostRequest(createUrl('/setPrediction'), obj);
+            })
         })
         stopLoader();
     })();
