@@ -7,6 +7,9 @@
     background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
     overflow: auto;
     padding-top: 60px;
+    cursor: pointer;
+    align-items: center;
+
 }
 
 .header {
@@ -23,7 +26,16 @@
     justify-content: center;
     transition: background-color 500ms ease;
 }
-
+.nav{
+    display: flex;
+    color: #e4e4e4;
+    width: 97%;
+    justify-content: space-around;
+    text-transform: uppercase;
+}
+.nav-item.active {
+    color: rgb(94, 185, 67);
+}
 .footer {
     color:#4e0019;
     display: flex;
@@ -46,9 +58,7 @@
     background-color: #ad214d;
 }
 
-.nav-item.active {
-    color: #fff;
-}
+
 
 .cards-container {
     padding: 0 30px;
@@ -142,8 +152,17 @@
     border-left: 1px solid #000;
     border-right: 1px solid #000;
     border-top: 1px solid #000;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.goals-chooser.hidden {
+    display: none;
 }
 
+.goals-chooser::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
 .goals-chooser.expanded {
     display: block;
 }
