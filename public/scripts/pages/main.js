@@ -8,7 +8,7 @@ function MainPage() {
             <header class="header">
                 <nav class="nav">
                     <span class="nav-item" data-goto="groups">Groups</span>
-                    <span class="nav-item active" data-goto="Play off">playoff</span>
+                    <span class="nav-item active" data-goto="playoff">Playoff</span>
                     <span class="nav-item" data-goto="points">Points</span>
                 </nav>
             </header>

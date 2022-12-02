@@ -7,9 +7,7 @@
     background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
     overflow: auto;
     padding-top: 60px;
-    cursor: pointer;
     align-items: center;
-
 }
 
 .header {
@@ -32,6 +30,7 @@
     width: 97%;
     justify-content: space-around;
     text-transform: uppercase;
+    cursor: pointer;
 }
 .nav-item.active {
     color: rgb(94, 185, 67);
