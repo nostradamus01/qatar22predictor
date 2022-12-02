@@ -53,7 +53,7 @@ function MainPage() {
             });
         });
 
-        loadPage(PlayoffPage());
+        loadContent(PlayoffPage());
 
         const logoutBtn = mainEl.querySelector('.logout-btn');
         if (logoutBtn) {

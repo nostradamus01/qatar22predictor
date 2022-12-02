@@ -51,7 +51,7 @@ function PlayoffPage() {
         }
 
         const mainContainer = mainEl;
-        const allData = await (await sendPostRequest(createUrl('/getAllData'), {})).json();
+        const allData = await (await sendPostRequest(createUrl('/getAllDataPlayoff'), {})).json();
         const { allUsers, allMatches, allPredictions, allResults } = allData;
 
         allMatches.sort((a, b) => {
@@ -95,7 +95,7 @@ function PlayoffPage() {
             const currentPrediction = currentUser.predictions.find((prediction) => prediction.matchId === match.matchId);
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
             const finished = currentMatchResult.finished === 'yes';
-            let pointsCmp = `<span class="line">-</span>`;
+            let pointsCmp = `<span class="line">:</span>`;
             if (finished) {
                 const originalScore = `${currentMatchResult.g1} - ${currentMatchResult.g2}`;
                 let pointsText = `+${currentPrediction.points} Point${currentPrediction.points > 1 ? 's' : ''}`;
@@ -133,62 +133,44 @@ function PlayoffPage() {
         for (let i = 0; i < goalsCount.length; i++) {
             let matchNum = box[i].getAttribute('data-match');
             let teamNum = box[i].getAttribute('data-team');
-            if (!allMatches[(+matchNum) - 1].unchangeable) {
-                goalsCount[i].addEventListener('click', () => {
-                    let openedNumbers = mainEl.querySelector('.open-numbers.not-hidden');
-                    if (openedNumbers && openedNumbers !== box[i]) {
-                        toggleElClass(openedNumbers, 'hidden', 'not-hidden');
-                    }
-                    toggleElClass(box[i], 'hidden', 'not-hidden');
-                    let expandedGoals = mainEl.querySelector('.goals-count.expanded');
-                    if (expandedGoals && expandedGoals !== goalsCount[i]) {
-                        toggleElClass(expandedGoals, 'expanded', 'not-expanded');
-                    }
-                    toggleElClass(goalsCount[i], 'expanded', 'not-expanded');
-                });
-
-                for (let j = 0; j < 10; j++) {
-                    box[i].insertAdjacentHTML('beforeend', `
-                                <div class="goal-count" data-goal="${j}">
-                                    <span>${j}</span>
-                                </div>
-                            `);
+            goalsCount[i].addEventListener('click', () => {
+                let openedNumbers = mainEl.querySelector('.open-numbers.not-hidden');
+                if (openedNumbers && openedNumbers !== box[i]) {
+                    toggleElClass(openedNumbers, 'hidden', 'not-hidden');
                 }
+                toggleElClass(box[i], 'hidden', 'not-hidden');
+                let expandedGoals = mainEl.querySelector('.goals-count.expanded');
+                if (expandedGoals && expandedGoals !== goalsCount[i]) {
+                    toggleElClass(expandedGoals, 'expanded', 'not-expanded');
+                }
+                toggleElClass(goalsCount[i], 'expanded', 'not-expanded');
+            });
 
-                const goals = box[i].querySelectorAll('.goal-count');
-                goals.forEach(goal => {
-                    if (!allMatches[(+matchNum) - 1].unchangeable) {
-                        goal.addEventListener('click', async (e) => {
-                            if (!allMatches[(+matchNum) - 1].unchangeable) {
-                                console.log(e.target);
-                                const goalCount = +goal.getAttribute('data-goal');
-                                goalsCount[i].innerHTML = `<span>${goalCount}</span>`;
-                                toggleElClass(box[i], 'hidden', 'not-hidden');
-                                toggleElClass(goalsCount[i], 'expanded', 'not-expanded');
-                                const obj = {
-                                    userId: currentUser.userId,
-                                    matchId: +matchNum,
-                                }
-                                obj[`g${teamNum}`] = goalCount;
-                                await sendPostRequest(createUrl('/setPrediction'), obj);
-                            }
-                        });
+            for (let j = 0; j < 10; j++) {
+                box[i].insertAdjacentHTML('beforeend', `
+                            <div class="goal-count" data-goal="${j}">
+                                <span>${j}</span>
+                            </div>
+                        `);
+            }
+
+            const goals = box[i].querySelectorAll('.goal-count');
+            goals.forEach(goal => {
+                goal.addEventListener('click', async (e) => {
+                    console.log(e.target);
+                    const goalCount = +goal.getAttribute('data-goal');
+                    goalsCount[i].innerHTML = `<span>${goalCount}</span>`;
+                    toggleElClass(box[i], 'hidden', 'not-hidden');
+                    toggleElClass(goalsCount[i], 'expanded', 'not-expanded');
+                    const obj = {
+                        userId: currentUser.userId,
+                        matchId: +matchNum,
                     }
+                    obj[`g${teamNum}`] = goalCount;
+                    await sendPostRequest(createUrl('/setPrediewction'), obj);
                 });
-            }
+            });
         };
-        let timeNow = new Date();
-        timeNow = timeNow.getTime();
-        const cards = mainEl.querySelectorAll('.card');
-        let cardsLenght = cards.length;
-        let currentMatchCard = cards[cards.length - 1];
-        for (let i = 0; i < cardsLenght; i++) {
-            if (timeNow < +cards[i].id) {
-                currentMatchCard = cards[i - 2];
-                break;
-            }
-        }
-        currentMatchCard.scrollIntoView();
         stopLoader();
     })();
 
