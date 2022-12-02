@@ -51,7 +51,7 @@ function GroupPage() {
         }
 
         const mainContainer = mainEl;
-        const allData = await (await sendPostRequest(createUrl('/getAllData'), {})).json();
+        const allData = await (await sendPostRequest('getAllData', {})).json();
         const { allUsers, allMatches, allPredictions, allResults } = allData;
 
         allMatches.sort((a, b) => {
@@ -170,7 +170,7 @@ function GroupPage() {
                                     matchId: +matchNum,
                                 }
                                 obj[`g${teamNum}`] = goalCount;
-                                await sendPostRequest(createUrl('/setPrediction'), obj);
+                                await sendPostRequest('setPrediction', obj);
                             }
                         });
                     }

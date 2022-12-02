@@ -65,7 +65,7 @@ function PlayoffPage() {
         }
 
         const mainContainer = mainEl;
-        const allData = await (await sendPostRequest(createUrl('/getAllDataPlayoff'), {})).json();
+        const allData = await (await sendPostRequest('getAllDataPlayoff', {})).json();
         const { allUsers, allMatches, allPredictions, allResults } = allData;
 
         allMatches.sort((a, b) => {
@@ -170,7 +170,7 @@ function PlayoffPage() {
                             addit.classList.add('hidden');
                         }
                     }
-                    await sendPostRequest(createUrl('/setPrediction'), obj);
+                    await sendPostRequest('setPrediction', obj);
                 })
                 goalsChooser.appendChild(el);
             }
@@ -198,7 +198,7 @@ function PlayoffPage() {
                     matchId: +selectTeam.getAttribute('data-match')
                 };
                 obj['winnerTeamCode'] = e.target.value;
-                await sendPostRequest(createUrl('/setPrediction'), obj);
+                await sendPostRequest('setPrediction', obj);
             })
             penal.addEventListener('input', async (e) => {
                 const obj = {
@@ -206,7 +206,7 @@ function PlayoffPage() {
                     matchId: +penal.getAttribute('data-match')
                 };
                 obj['willPenalties'] = e.target.checked ? 'yes' : 'no';
-                await sendPostRequest(createUrl('/setPrediction'), obj);
+                await sendPostRequest('setPrediction', obj);
             })
         })
         stopLoader();

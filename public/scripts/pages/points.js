@@ -3,7 +3,7 @@ function PointsPage() {
     mainEl.classList.add('.pointsCMP');
 
     (async () => {
-        const allData = await (await sendPostRequest(createUrl('/getAllData'), {})).json();
+        const allData = await (await sendPostRequest('getAllData')).json();
         const { allUsers, allMatches, allPredictions, allResults } = allData;
 
         allMatches.sort((a, b) => {

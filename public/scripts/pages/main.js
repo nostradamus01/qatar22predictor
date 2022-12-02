@@ -1,13 +1,15 @@
 function MainPage() {
     const mainEl = document.createElement('div');
 
+    //<span class="nav-item" data-goto="groups">Groups</span>
+
     mainEl.insertAdjacentHTML('afterbegin', `
         <link rel="stylesheet" href="styles/main.css">
 
         <div class="main-content">
             <header class="header">
                 <nav class="nav">
-                    <span class="nav-item" data-goto="groups">Groups</span>
+                    
                     <span class="nav-item active" data-goto="playoff">Playoff</span>
                     <span class="nav-item" data-goto="points">Points</span>
                 </nav>

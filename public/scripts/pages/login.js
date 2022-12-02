@@ -55,7 +55,7 @@ function LoginPage() {
                     const formData = getFormData(loginForm);
                     e.target.value = '';
                     startLoader();
-                    let res = await sendPostRequest(createUrl('/login'), formData);
+                    let res = await sendPostRequest('login', formData);
                     res = await res.json();
                     createLoginCookie(formData.username);
                     if (res.success) {
@@ -69,7 +69,7 @@ function LoginPage() {
         }
         const selectTag = mainEl.querySelector('.custom-select');
         if (selectTag) {
-            let res = await sendPostRequest(createUrl('/getAllUsers'), {});
+            let res = await sendPostRequest(getAllUsers);
             res = await res.json();
             selectTag.innerHTML = '';
             selectTag.insertAdjacentHTML('afterbegin', `
