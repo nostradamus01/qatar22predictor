@@ -69,7 +69,7 @@ function LoginPage() {
         }
         const selectTag = mainEl.querySelector('.custom-select');
         if (selectTag) {
-            let res = await sendPostRequest(getAllUsers);
+            let res = await sendPostRequest('getAllUsers');
             res = await res.json();
             selectTag.innerHTML = '';
             selectTag.insertAdjacentHTML('afterbegin', `
