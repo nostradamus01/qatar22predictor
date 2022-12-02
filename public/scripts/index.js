@@ -21,7 +21,7 @@ const sendPostRequest = async (mainAction, data) => {
 	return await fetch('/.netlify/functions/api', {
 		method: 'POST',
 		body: JSON.stringify({
-            mainAction: mainAction,
+            action: mainAction,
             data: data
         }),
 		headers: {
