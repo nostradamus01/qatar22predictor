@@ -59,6 +59,7 @@ function LoginPage() {
                     res = await res.json();
                     createLoginCookie(formData.username);
                     if (res.success) {
+                        userCookie = getUserCookie();
                         loadPage(MainPage());
                     } else {
                         wrongPin.innerHTML = 'Սխալ PIN';

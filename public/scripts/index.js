@@ -38,7 +38,7 @@ const stopLoader = () => {
     loaderComponent.classList.add('hidden');
 }
 
-const userCookie = getUserCookie();
+let userCookie = getUserCookie();
 
 const loadPage = (page) => {
     appEl.innerHTML = '';
