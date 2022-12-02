@@ -16,6 +16,10 @@ body {
     background: var(--main-bg);
 }
 
+main.main {
+	flex: 1;
+}
+
 
 /* Loader component */
 
