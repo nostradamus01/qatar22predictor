@@ -93,6 +93,7 @@ const login = async (data) => {
 
 const setPrediction = async (data) => {
     try {
+        return data;
         let success = false;
         const { matchId, userId, g1, g2, winnerTeamCode, willPenalties } = data;
 
