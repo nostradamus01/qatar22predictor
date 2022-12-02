@@ -93,10 +93,8 @@ const login = async (data) => {
 
 const setPrediction = async (data) => {
     try {
-        // return data;
         let success = false;
         const { matchId, userId, g1, g2, winnerTeamCode, willPenalties } = data;
-        return [matchId, userId, g1, g2, winnerTeamCode, willPenalties];
 
         let obj = {};
         if (g1 && g1 !== 0) {
@@ -109,6 +107,7 @@ const setPrediction = async (data) => {
             obj['willPenalties'] = willPenalties;
         }
 
+        await client.connect();
         const match = await client.db('playoff').collection('matches').findOne({
             matchId: matchId
         });
@@ -117,8 +116,8 @@ const setPrediction = async (data) => {
             let timeNow = new Date();
             if (matchTime.getTime() > timeNow.getTime()) {
                 await client.db('playoff').collection('predictions').updateOne(
-                    {userId: userId, matchId: matchId},
-                    {$set: obj}
+                    { userId: userId, matchId: matchId },
+                    { $set: obj }
                 );
                 success = true;
             }
