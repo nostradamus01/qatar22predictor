@@ -35,7 +35,7 @@ const getAllUsers = async () => {
             delete user.pinCode;
         });
         return {
-            allUsers: users
+            users: users
         }
     } catch (e) {
         return null;

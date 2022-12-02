@@ -59,7 +59,7 @@ function LoginPage() {
                     res = await res.json();
                     createLoginCookie(formData.username);
                     if (res.success) {
-                        location.replace('../');
+                        loadPage(MainPage());
                     } else {
                         wrongPin.innerHTML = 'Սխալ PIN';
                         stopLoader();
