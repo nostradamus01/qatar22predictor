@@ -97,9 +97,9 @@ const setPrediction = async (data) => {
         const { matchId, userId, g1, g2, winnerTeamCode, willPenalties } = data;
 
         let obj = {};
-        if (g1 && g1 !== 0) {
+        if (g1) {
             obj['g1'] = parseInt(g1);
-        } else if (g2 && g2 !== 0) {
+        } else if (g2) {
             obj['g2'] = parseInt(g2);
         } else if (winnerTeamCode && winnerTeamCode.length === 3) {
             obj['winnerTeamCode'] = winnerTeamCode;
