@@ -1,4 +1,5 @@
 const loaderComponent = document.querySelector('.loader');
+const appEl = document.querySelector('#app');
 
 const getUserCookie = () => {
     const cookies = document.cookie.split(';');
@@ -36,16 +37,14 @@ const stopLoader = () => {
 
 const userCookie = getUserCookie();
 
+const loadPage = (page) => {
+    appEl.innerHTML = '';
+    appEl.insertAdjacentElement('afterbegin', page);
+}
+
 if (userCookie === null || !userCookie.alreadyLogined) {
-    location.replace(createUrl('/toLogin'));
+    loadPage(LoginPage());
 } else {
     startLoader();
-    document.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.querySelector('.logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                location.replace(createUrl('/toLogin'));
-            });
-        }
-    });
+    loadPage(MainPage());
 }

@@ -249,3 +249,7 @@
 .footer span:hover{
     color: #fff;
 }
+
+.nav-item.active {
+    color: #fff;
+}

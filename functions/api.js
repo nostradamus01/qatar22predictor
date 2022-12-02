@@ -1,297 +1,173 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const express = require('express');
-const bodyParser = require('body-parser');
-const serverless = require('serverless-http');
 const bcrypt = require('bcrypt');
 
 const uri = process.env.MongoURL;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-const app = express();
-const router = express.Router();
-
-app.use(express.static('public'));
-app.use(bodyParser.json());
-
-const connect = async (callback) => {
+const getAllData = async () => {
     try {
         await client.connect();
-        console.log('Connected successfully');
-        await callback();
-        client.close();
+        const users = await client.db('fifa22cup').collection('users').find().toArray();
+        users.forEach(user => {
+            delete user.pinCode;
+        });
+        const matches = await client.db('fifa22cup').collection('matches').find().toArray();
+        const results = await client.db('fifa22cup').collection('results').find().toArray();
+        const predictions = await client.db('fifa22cup').collection('predictions').find().toArray();
+        return {
+            allUsers: users,
+            allMatches: matches,
+            allResults: results,
+            allPredictions: predictions,
+        }
     } catch (e) {
-        console.error(e);
+        return null;
+    } finally {
+        client.close();
     }
-}
+};
 
-router.get('/toLogin', async (req, res) => {
-    res.redirect('https://fifa-qatar2022.netlify.app/pages/login.html');
-});
-
-router.post('/createUser', async (req, res) => {
-    await connect(async () => {
-        let success = false;
-        const { userId, username, pinCode, name, name_tr } = req.body;
-        try {
-            const bcryptedPinCode = await bcrypt.hash(pinCode, 3);
-            await client.db('fifa22cup').collection('users').insertOne({
-                userId: userId,
-                username: username,
-                pinCode: bcryptedPinCode,
-                name: name,
-                name_tr: name_tr
-            });
-            success = true;
-        } catch (e) {
-            console.error(e);
+const getAllUsers = async () => {
+    try {
+        await client.connect();
+        const users = await client.db('fifa22cup').collection('users').find().toArray();
+        users.forEach(user => {
+            delete user.pinCode;
+        });
+        return {
+            allUsers: users
         }
-        res.send({success: success});
-    });
-});
+    } catch (e) {
+        return null;
+    } finally {
+        client.close();
+    }
+};
 
-router.post('/changePIN', async (req, res) => {
-    await connect(async () => {
-        let success = false;
-        const { username, pinCode } = req.body;
-        try {
-            const bcryptedPinCode = await bcrypt.hash(pinCode, 3);
-            await client.db('fifa22cup').collection('users').updateOne(
-                {username: username},
-                {$set: {
-                    pinCode: bcryptedPinCode
-                }}
-            );
-            success = true;
-        } catch (e) {
-            console.error(e);
+const getAllDataPlayoff = async () => {
+    try {
+        await client.connect();
+        const users = await client.db('fifa22cup').collection('users').find().toArray();
+        users.forEach(user => {
+            delete user.pinCode;
+        });
+        const matches = await client.db('playoff').collection('matches').find().toArray();
+        const results = await client.db('playoff').collection('results').find().toArray();
+        const predictions = await client.db('playoff').collection('predictions').find().toArray();
+        return {
+            allUsers: users,
+            allMatches: matches,
+            allResults: results,
+            allPredictions: predictions,
         }
-        res.send({success: success});
-    });
-});
+    } catch (e) {
+        return null;
+    } finally {
+        client.close();
+    }
+};
 
-router.post('/getAllUsers', async (req, res) => {
-    await connect(async () => {
-        try {
-            const users = await client.db('fifa22cup').collection('users').find().toArray();
-            users.forEach(user => {
-                delete user.pinCode;
-            });
-            res.send({users: users});
-        } catch (e) {
-            console.error(e);
-        }
-    });
-});
-
-router.post('/login', async (req, res) => {
-    await connect(async () => {
+const login = async (data) => {
+    try {
         let success = false;
-        const username = req.body.username;
-        const pinCode = req.body.pinCode;
-        try {
-            const user = await client.db('fifa22cup').collection('users').findOne({
-                username: username
-            });
-            if (user) {
-                if (await bcrypt.compare(pinCode, user.pinCode)) {
-                    success = true;
-                }
+        const { username, pinCode } = data;
+
+        await client.connect();
+        const user = await client.db('fifa22cup').collection('users').findOne({
+            username: username
+        });
+        if (user) {
+            if (await bcrypt.compare(pinCode, user.pinCode)) {
+                success = true;
             }
-        } catch (e) {
-            console.error(e);
         }
-        res.send({success: success});
-    });
-});
+        return {
+            success: success
+        }
+    } catch (e) {
+        return null;
+    } finally {
+        client.close();
+    }
+};
 
-router.post('/setPrediction', async (req, res) => {
-    await connect(async () => {
+const setPrediction = async (data) => {
+    try {
         let success = false;
-        let { userId, matchId, g1, g2 } = req.body;
+        const { matchId, userId, g1, g2, winnerTeamCode, willPenalties } = data;
+
         let obj = {};
         if (g1 && g1 !== 0) {
             obj['g1'] = parseInt(g1);
         } else if (g2 && g2 !== 0) {
             obj['g2'] = parseInt(g2);
+        } else if (winnerTeamCode && winnerTeamCode.length === 3) {
+            obj['winnerTeamCode'] = winnerTeamCode;
+        } else if (willPenalties && willPenalties.length > 0) {
+            obj['willPenalties'] = willPenalties;
         }
-        try {
-            const match = await client.db('fifa22cup').collection('matches').findOne({
-                matchId: matchId
-            });
-            if (match) {
-                let matchTime = new Date(match.date);
-                let timeNow = new Date();
-                if (matchTime.getTime() > timeNow.getTime()) {
-                    await client.db('fifa22cup').collection('predictions').updateOne(
-                        {userId: userId, matchId: matchId},
-                        {$set: obj}
-                    );
-                    success = true;
-                }
-                await client.db('fifa22cup').collection('predictions').updateOne(
+
+        const match = await client.db('fifa22cup').collection('matches').findOne({
+            matchId: matchId
+        });
+        if (match) {
+            let matchTime = new Date(match.date);
+            let timeNow = new Date();
+            if (matchTime.getTime() > timeNow.getTime()) {
+                await client.db('playoff').collection('predictions').updateOne(
                     {userId: userId, matchId: matchId},
                     {$set: obj}
                 );
                 success = true;
             }
-        } catch (e) {
-            console.error(e);
         }
-        res.send({success: success});
-    });
-});
-
-router.post('/setResult', async (req, res) => {
-    await connect(async () => {
-        let success = false;
-        let { matchId, g1, g2, finished } = req.body;
-        try {
-            await client.db('fifa22cup').collection('results').updateOne(
-                {matchId: matchId},
-                {$set: {
-                    g1: parseInt(g1),
-                    g2: parseInt(g2),
-                    finished: finished
-                }}
-            );
-            success = true;
-        } catch (e) {
-            console.error(e);
+        return {
+            success: success
         }
-        res.send({success: success});
-    });
-});
+    } catch (e) {
+        return null;
+    } finally {
+        client.close();
+    }
+};
 
-router.post('/setPoints', async (req, res) => {
-    await connect(async () => {
-        let success = false;
-        let { userId, matchId, points } = req.body;
-        try {
-            await client.db('fifa22cup').collection('predictions').updateOne(
-                {userId: userId, matchId: matchId},
-                {$set: {
-                    points: points
-                }}
-            );
-            success = true;
-        } catch (e) {
-            console.error(e);
+module.exports.handler = async (event, context) => {
+    let data = null;
+
+    const body = JSON.parse(event.body);
+
+    switch (body.action) {
+        case 'getAllUsers':
+            data = await getAllUsers();
+            break;
+        case 'getAllData':
+            data = await getAllData();
+            break;
+        case 'getAllDataPlayoff':
+            data = await getAllDataPlayoff();
+            break;
+        case 'login':
+            data = await login(body.data);
+            break;
+        case 'setPrediction':
+            data = await setPrediction(body.data);
+            break;
+    }
+
+    let response = null;
+    if (data) {
+        response = {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         }
-        res.send({success: success});
-    });
-});
-
-router.post('/setAllPoints', async (req, res) => {
-    await connect(async () => {
-        let success = false;
-        let { username, points } = req.body;
-        try {
-            await client.db('fifa22cup').collection('users').updateOne(
-                {username: username},
-                {$set: {
-                    points: points
-                }}
-            );
-            success = true;
-        } catch (e) {
-            console.error(e);
+    } else {
+        response = {
+            statusCode: 404
         }
-        res.send({success: success});
-    });
-});
+    }
 
-router.post('/getAllData', async (req, res) => {
-    await connect(async () => {
-        try {
-            const users = await client.db('fifa22cup').collection('users').find().toArray();
-            users.forEach(user => {
-                delete user.pinCode;
-            });
-            const matches = await client.db('fifa22cup').collection('matches').find().toArray();
-            const predictions = await client.db('fifa22cup').collection('predictions').find().toArray();
-            const results = await client.db('fifa22cup').collection('results').find().toArray();
-            res.send({
-                allUsers: users,
-                allMatches: matches,
-                allPredictions: predictions,
-                allResults: results
-            });
-        } catch (e) {
-            console.error(e);
-        }
-    });
-});
-
-app.use('/.netlify/functions/api', router);
-
-module.exports.handler = serverless(app);
-
-// DON'T DELETE
-
-// app.post('/createTeams', async (req, res) => {
-//     let success = false;
-//     let { teamId, code, name } = req.body;
-//     try {
-//         code = code.toLowerCase();
-//         await client.db('fifa22cup').collection('teams').insertOne({
-//             teamId: teamId,
-//             code: code,
-//             name: name
-//         });
-//         success = true;
-//     } catch (e) {
-//         console.error(e);
-//     }
-//     res.send({success: success});
-// });
-
-// app.post('/createMatches', async (req, res) => {
-//     let success = false;
-//     let { matchId, t1, t2, date } = req.body;
-//     try {
-//         await client.db('fifa22cup').collection('matches').insertOne({
-//             matchId: matchId,
-//             t1: t1.toLowerCase(),
-//             t2: t2.toLowerCase(),
-//             date: date
-//         });
-//         success = true;
-//     } catch (e) {
-//         console.error(e);
-//     }
-//     res.send({success: success});
-// });
-
-// app.post('/createPredictions', async (req, res) => {
-//     let success = false;
-//     let { matchId, userId, g1, g2, points } = req.body;
-//     try {
-//         await client.db('fifa22cup').collection('predictions').insertOne({
-//             userId: userId,
-//             matchId: matchId,
-//             g1: g1,
-//             g2: g2,
-//             points: points
-//         });
-//         success = true;
-//     } catch (e) {
-//         console.error(e);
-//     }
-//     res.send({success: success});
-// });
-
-// app.post('/createResults', async (req, res) => {
-//     let success = false;
-//     let { matchId, g1, g2 } = req.body;
-//     try {
-//         await client.db('fifa22cup').collection('results').insertOne({
-//             matchId: matchId,
-//             g1: g1,
-//             g2: g2
-//         });
-//         success = true;
-//     } catch (e) {
-//         console.error(e);
-//     }
-//     res.send({success: success});
-// });
+    return response;
+}
