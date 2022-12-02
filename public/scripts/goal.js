@@ -30,7 +30,18 @@ const createCard = (match) => {
                         <p class="name">${match.team2Code}</p>
                     </div>
                 </div>    
-            </div>  
+            </div> 
+            <div class="more">             
+                <div class="chack">
+                    <input type="radio" name="radio" id="">
+                    <p class="winner">winner</p>
+                    <input type="radio" name="radio" id="">
+                </div>
+                <div class="penal">
+                    <p class="penalP">penalties</p>
+                    <input type="radio" name="radio" id="">
+                </div>
+            </div>   
         </div>
     `;
 }
