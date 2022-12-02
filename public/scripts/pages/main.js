@@ -35,6 +35,10 @@ function MainPage() {
         navItems.forEach((item) => {
             item.addEventListener('click', () => {
                 if (!item.classList.contains('active')) {
+                    navItems.forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    item.classList.add('active');
                     let page = null;
                     const pageName = item.dataset.goto;
                     switch (pageName) {
