@@ -107,7 +107,7 @@ const setPrediction = async (data) => {
             obj['willPenalties'] = willPenalties;
         }
 
-        const match = await client.db('fifa22cup').collection('matches').findOne({
+        const match = await client.db('playoff').collection('matches').findOne({
             matchId: matchId
         });
         if (match) {
