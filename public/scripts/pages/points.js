@@ -39,13 +39,13 @@ function PointsPage() {
                 }
 
                 if (isPlayoff) {
-                    if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
-                        points++;
-                    }
-                    if ((result.winnerTeamCode.length === 3) && (result.winnerTeamCode === prediction.winnerTeamCode)) {
-                        points++;
-                    }
                     if (pg1 === pg2) {
+                        if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
+                            points++;
+                        }
+                        if ((result.winnerTeamCode.length === 3) && (result.winnerTeamCode === prediction.winnerTeamCode)) {
+                            points++;
+                        }
                         const currentMatch = playoffMatches.find(match => match.matchId === prediction.matchId);
                         if (prediction.winnerTeamCode.length === 3) {
                             if (prediction.winnerTeamCode === currentMatch.t1 || prediction.winnerTeamCode === currentMatch.t2) {
@@ -82,6 +82,8 @@ function PointsPage() {
         });
 
         users.sort((a, b) => b.allPoints - a.allPoints);
+
+        console.log(users);
 
         const currentUser = users.find((user) => user.username === userCookie.username);
 
