@@ -18,6 +18,15 @@ const getUserCookie = () => {
 }
 
 const sendPostRequest = async (mainAction, data) => {
+    if (DEV_MODE) {
+        return await fetch(`/${mainAction}`, {
+            method: 'POST',
+		    body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 	return await fetch('/.netlify/functions/api', {
 		method: 'POST',
 		body: JSON.stringify({
