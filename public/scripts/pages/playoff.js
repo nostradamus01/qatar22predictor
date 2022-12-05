@@ -33,7 +33,7 @@ function PlayoffPage() {
                                 </div>
                             </div>
                             <div class="results ${!data.isFinished ? 'hidden' : ''}">
-                                <div class="original-score">${data.originalG1} : ${data.originalG2}</div>
+                                <div class="original-score">${data.scoreText}</div>
                                 <div class="points">${data.pointsText}</div>
                             </div>
                         </div>
@@ -72,23 +72,22 @@ function PlayoffPage() {
             return a.matchId - b.matchId;
         });
 
-        const usersWPred = [];
-        allUsers.forEach((user) => {
-            const pred = allPredictions.filter(prediction => user.userId === prediction.userId);
-            user.predictions = pred;
-            usersWPred.push(user);
-        });
+        let currentUser = allUsers.find((user) => user.username === userCookie.username);
 
-        usersWPred.forEach((user) => {
-            let allPoints = 0;
-            user.predictions.forEach((prediction) => {
-                const result = allResults.find((result) => result.matchId === prediction.matchId)
-                if (result.finished === 'yes') {
-                    let pg1 = prediction.g1,
-                        pg2 = prediction.g2;
-                    let og1 = result.g1,
-                        og2 = result.g2;
-                    let points = 0;
+        currentUser.predictions = allPredictions.filter(prediction => currentUser.userId === prediction.userId);
+
+        let allPoints = 0;
+        currentUser.predictions.forEach((prediction) => {
+            const result = allResults.find((result) => result.matchId === prediction.matchId)
+            if (result.finished === 'yes') {
+                let points = 0;
+                let pg1 = prediction.g1,
+                    pg2 = prediction.g2;
+                if ((pg1 || pg1 === 0) && (pg2 || pg2 === 0)) {
+                    pg1 = +pg1;
+                    pg2 = +pg2;
+                    let og1 = +result.g1,
+                        og2 = +result.g2;
                     if (pg1 === og1 && pg2 === og2) {
                         points = 5;
                     } else if ((pg1 - pg2) === (og1 - og2)) {
@@ -96,15 +95,24 @@ function PlayoffPage() {
                     } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
                         points = 1;
                     }
-                    prediction.points = points;
-                    allPoints += points;
-                }
-            });
-            user.points = allPoints;
-        });
 
-        const currentUser = usersWPred.find((user) => user.username === userCookie.username);
-        
+                    if (pg1 === pg2) {
+                        if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
+                            points++;
+                        }
+                        if (result.winnerTeamCode.length === 3) {
+                            if (result.winnerTeamCode === prediction.winnerTeamCode) {
+                                points++;
+                            }
+                        }
+                    }
+                }
+                prediction.points = points;
+                allPoints += points;
+            }
+        });
+        currentUser.points = allPoints;
+
         allMatches.forEach((match) => {
             const currentPrediction = currentUser.predictions.find((prediction) => prediction.matchId === match.matchId);
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
@@ -123,10 +131,9 @@ function PlayoffPage() {
                 team1Goals: currentPrediction.g1,
                 team2Goals: currentPrediction.g2,
                 matchNum: match.matchId,
-                finished: finished,
+                isFinished: finished,
                 pointsText: '',
-                originalG1: '',
-                originalG2: '',
+                scoreText: '',
                 isChangable: matchTime.getTime() > timeNow.getTime(),
                 hasAdditionalInfo,
                 winnerTeamCode: currentPrediction.winnerTeamCode,
@@ -135,8 +142,10 @@ function PlayoffPage() {
 
             if (finished) {
                 matchData.pointsText = `+${currentPrediction.points} Point${currentPrediction.points > 1 ? 's' : ''}`;
-                matchData.originalG1 = currentMatchResult.g1;
-                matchData.originalG2 = currentMatchResult.g2;
+                matchData.scoreText = `${currentMatchResult.g1} : ${currentMatchResult.g2}`;
+                if (currentMatchResult.g1 === currentMatchResult.g2) {
+                    matchData.scoreText += `&nbsp;(${currentMatchResult.winnerTeamCode.toUpperCase()} wins)`;
+                }
             }
             mainContainer.insertAdjacentHTML('beforeend', createCard(matchData));
         });

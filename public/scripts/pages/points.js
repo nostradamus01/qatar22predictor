@@ -24,33 +24,32 @@ function PointsPage() {
         predictions.forEach((prediction) => {
             const result = results.find((result) => result.matchId === prediction.matchId);
             if (result.finished === 'yes') {
-                let pg1 = +prediction.g1,
-                    pg2 = +prediction.g2;
-                let og1 = +result.g1,
-                    og2 = +result.g2;
-
                 let points = 0;
-                if (pg1 === og1 && pg2 === og2) {
-                    points = 5;
-                } else if ((pg1 - pg2) === (og1 - og2)) {
-                    points = 2;
-                } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
-                    points = 1;
-                }
+                let pg1 = prediction.g1,
+                    pg2 = prediction.g2;
+                if ((pg1 || pg1 === 0) && (pg2 || pg2 === 0)) {
+                    pg1 = +pg1;
+                    pg2 = +pg2;
+                    let og1 = +result.g1,
+                        og2 = +result.g2;
 
-                if (isPlayoff) {
-                    if (pg1 === pg2) {
-                        if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
-                            points++;
-                        }
-                        if (result.winnerTeamCode.length === 3) {
-                            if (result.winnerTeamCode === prediction.winnerTeamCode) {
+                    if (pg1 === og1 && pg2 === og2) {
+                        points = 5;
+                    } else if ((pg1 - pg2) === (og1 - og2)) {
+                        points = 2;
+                    } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
+                        points = 1;
+                    }
+
+                    if (isPlayoff) {
+                        if (pg1 === pg2) {
+                            if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
                                 points++;
                             }
-                        } else if (prediction.winnerTeamCode.length === 3 ) {
-                            const currentMatch = playoffMatches.find(match => match.matchId === prediction.matchId);
-                            if (prediction.winnerTeamCode === currentMatch.t1 || prediction.winnerTeamCode === currentMatch.t2) {
-                                points++;
+                            if (result.winnerTeamCode.length === 3) {
+                                if (result.winnerTeamCode === prediction.winnerTeamCode) {
+                                    points++;
+                                }
                             }
                         }
                     }
@@ -87,6 +86,8 @@ function PointsPage() {
         const currentUser = users.find((user) => user.username === userCookie.username);
 
         const tableBody = mainEl.querySelector('.table-body');
+
+        // console.log(users);
 
         users.forEach(user => {
             tableBody.insertAdjacentHTML('beforeend', `
