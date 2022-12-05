@@ -9,27 +9,27 @@ function MainPage() {
         <div class="main-content">
             <header class="header">
                 <nav class="nav">
-                    
                     <span class="nav-item active" data-goto="playoff">Playoff</span>
                     <span class="nav-item" data-goto="points">Points</span>
                 </nav>
             </header>
 
-            <main class="main"></main>
-
-            <footer class="footer">
-                <div>
-                    <button class="logout-btn">Logout</button>
-                </div>
-                <span>FIFA Qatar World Cup 2022 Predictor By MainNightDev</span>
-            </footer>
+            <main class="main">
+                <div class="content"></div>
+                <footer class="footer">
+                    <div>
+                        <button class="logout-btn">Logout</button>
+                    </div>
+                    <span>FIFA Qatar World Cup 2022 Predictor By MainNightDev</span>
+                </footer>
+            </main>            
         </div>
     `);
 
     const loadContent = (content) => {
-        const mainCmp = mainEl.querySelector('.main');
-        mainCmp.innerHTML = '';
-        mainCmp.insertAdjacentElement('afterbegin', content);
+        const contentCmp = mainEl.querySelector('.content');
+        contentCmp.innerHTML = '';
+        contentCmp.insertAdjacentElement('afterbegin', content);
     }
 
     (async () => {

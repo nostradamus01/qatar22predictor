@@ -67,6 +67,35 @@ const getAllDataPlayoff = async () => {
     }
 };
 
+const getGroupAndPlayoffData = async () => {
+    try {
+        await client.connect();
+        const users = await client.db('fifa22cup').collection('users').find().toArray();
+        users.forEach(user => {
+            delete user.pinCode;
+        });
+        const groupMatches = await client.db('fifa22cup').collection('matches').find().toArray();
+        const groupPredictions = await client.db('fifa22cup').collection('predictions').find().toArray();
+        const groupResults = await client.db('fifa22cup').collection('results').find().toArray();
+        const playoffMatches = await client.db('playoff').collection('matches').find().toArray();
+        const playoffPredictions = await client.db('playoff').collection('predictions').find().toArray();
+        const playoffResults = await client.db('playoff').collection('results').find().toArray();
+        return {
+            users,
+            groupMatches,
+            groupPredictions,
+            groupResults,
+            playoffMatches,
+            playoffPredictions,
+            playoffResults
+        }
+    } catch (e) {
+        return null;
+    } finally {
+        client.close();
+    }
+};
+
 const login = async (data) => {
     try {
         let success = false;
@@ -152,6 +181,9 @@ module.exports.handler = async (event, context) => {
             break;
         case 'setPrediction':
             data = await setPrediction(body.data);
+            break;
+        case 'getGroupAndPlayoffData':
+            data = await getGroupAndPlayoffData();
             break;
     }
 

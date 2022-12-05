@@ -130,6 +130,32 @@ app.post('/getAllDataPlayoff', async (req, res) => {
     });
 });
 
+app.post('/getGroupAndPlayoffData', async (req, res) => {
+    await connect(async () => {
+        try {
+            const users = await client.db('fifa22cup').collection('users').find().toArray();
+            users.forEach(user => {
+                delete user.pinCode;
+            });
+            const groupMatches = await client.db('fifa22cup').collection('matches').find().toArray();
+            const groupPredictions = await client.db('fifa22cup').collection('predictions').find().toArray();
+            const groupResults = await client.db('fifa22cup').collection('results').find().toArray();
+            const playoffMatches = await client.db('playoff').collection('matches').find().toArray();
+            const playoffPredictions = await client.db('playoff').collection('predictions').find().toArray();
+            const playoffResults = await client.db('playoff').collection('results').find().toArray();
+            res.send({
+                users,
+                groupMatches,
+                groupPredictions,
+                groupResults,
+                playoffMatches,
+                playoffPredictions,
+                playoffResults
+            });
+        } catch (e) { }
+    });
+});
+
 app.listen(defautlPort, () => {
     console.log('Server is live...');
 });

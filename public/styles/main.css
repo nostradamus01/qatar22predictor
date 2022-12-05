@@ -8,6 +8,7 @@
     overflow: auto;
     padding-top: 60px;
     align-items: center;
+    position: relative;
 }
 
 .header {
@@ -15,28 +16,43 @@
     left: 0;
     right: 0;
     position: fixed;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.7);
     z-index: 5;
     padding: 0 10px;
     height: 60px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background-color 500ms ease;
 }
+
+main.main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+    width: 100%;
+}
+
 .nav{
     display: flex;
     color: #e4e4e4;
-    width: 97%;
     justify-content: space-around;
     text-transform: uppercase;
+    flex: 1;
+}
+
+.nav-item {
+    text-shadow: 2px 2px 3px #000;
     cursor: pointer;
 }
+
 .nav-item.active {
-    color: rgb(94, 185, 67);
+    color: #5eb943;
 }
+
 .footer {
-    color:#4e0019;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -44,20 +60,22 @@
     padding: 20px;
     background-color: #000000;
     text-align: center;
-    font-size: 1em;
 }
+
 .logout-btn{
-    font-weight: 500;
     color: #e4e4e4;
-    font-size: 1.5em; 
-    padding: 15px 30px;
-    border-radius: 15px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 1em;
     border: none;
     margin-bottom: 20px;
-    background-color: #ad214d;
+    background-color: #5eb943;
 }
 
-
+.footer span {
+    font-size: 0.8em;
+    color: #e4e4e4;
+}
 
 .cards-container {
     padding: 0 30px;
@@ -68,9 +86,9 @@
     background-color: #fff;
     font-size: 20px;
     min-width: 300px;
-    max-width: 365px;
+    max-width: 350px;
     width: 100%;
-    margin: 20px 0;
+    margin: 20px auto;
     font-size: 16px;
 }
 
@@ -286,10 +304,46 @@
     border-radius: 0;
 }
 
-.all-points {
-    color: #fff;
+.points-container {
+    width: 100%;
+    padding: 20px;
 }
 
-.pointsCMP {
-    margin-top: 20px;
+.points-container.hidden {
+    display: none;
+}
+
+.points-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 16px;
+    color: #fff;
+    line-height: 1;
+}
+
+.points-table, .points-table td, .points-table tr {
+    border: 2px solid #5eb943;
+    padding: 10px 6px;
+    vertical-align: middle;
+}
+
+.points-table tr {
+    text-align: center;
+}
+
+.points-table tr.current-user {
+    color: #25c89c;
+}
+
+.points-table thead {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.points-table thead td:first-child {
+    font-size: 16px;
+}
+
+.points-table tbody {
+    font-size: 18px;
 }

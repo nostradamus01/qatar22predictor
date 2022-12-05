@@ -1,67 +1,105 @@
 function PointsPage() {
-    const mainEl = document.createElement('table');
-    mainEl.classList.add('.pointsCMP');
+    const mainEl = document.createElement('div');
+    mainEl.classList.add('points-container', 'hidden');
 
-    (async () => {
-        const allData = await (await sendPostRequest('getAllData')).json();
-        const { allUsers, allMatches, allPredictions, allResults } = allData;
+    mainEl.insertAdjacentHTML('afterbegin', `
+        <table class="points-table">
+            <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>All points</td>
+                    <td>Group points</td>
+                    <td>Playoff points</td>
+                </tr>
+            </thead>
+            <tbody class="table-body">
+                
+            </tbody>
+        </table>
+    `);
 
-        allMatches.sort((a, b) => {
-            return a.matchId - b.matchId;
-        });
+    const calculatePoints = (predictions, results, isPlayoff, playoffMatches) => {
+        let allPoints = 0;
 
-        const usersWPred = [];
-        allUsers.forEach((user) => {
-            const pred = allPredictions.filter(prediction => user.userId === prediction.userId);
-            user.predictions = pred;
-            usersWPred.push(user);
-        });
+        predictions.forEach((prediction) => {
+            const result = results.find((result) => result.matchId === prediction.matchId);
+            if (result.finished === 'yes') {
+                let pg1 = +prediction.g1,
+                    pg2 = +prediction.g2;
+                let og1 = +result.g1,
+                    og2 = +result.g2;
 
-        usersWPred.forEach((user) => {
-            let allPoints = 0;
-            user.predictions.forEach((prediction) => {
-                const result = allResults.find((result) => result.matchId === prediction.matchId)
-                if (result.finished === 'yes') {
-                    let pg1 = prediction.g1,
-                        pg2 = prediction.g2;
-                    let og1 = result.g1,
-                        og2 = result.g2;
-                    let points = 0;
-                    if (pg1 === og1 && pg2 === og2) {
-                        points = 5;
-                    } else if ((pg1 - pg2) === (og1 - og2)) {
-                        points = 2;
-                    } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
-                        points = 1;
-                    }
-                    prediction.points = points;
-                    allPoints += points;
+                let points = 0;
+                if (pg1 === og1 && pg2 === og2) {
+                    points = 5;
+                } else if ((pg1 - pg2) === (og1 - og2)) {
+                    points = 2;
+                } else if (((pg1 > pg2) && (og1 > og2)) || ((pg2 > pg1) && (og2 > og1))) {
+                    points = 1;
                 }
-            });
-            user.points = allPoints;
-        });
 
-        const currentUser = usersWPred.find((user) => user.username === userCookie.username);
-        usersWPred.sort((a,b) => {
-            return b.points - a.points;
-        });
-        usersWPred.forEach((user)=>{
-            if (user.userId === currentUser.userId) {
-                mainEl.insertAdjacentHTML('beforeend',`
-                    <tr class="all-points" style="color: #ad214d;">
-                        <td style="padding-right:30px">${user.name_tr}</td>
-                        <td>${user.points}</td>
-                    </tr>
-                `);
-            } else {
-                mainEl.insertAdjacentHTML('beforeend',`
-                    <tr class="all-points">
-                        <td style="padding-right:30px">${user.name_tr}</td>
-                        <td>${user.points}</td>
-                    </tr>
-                `);
+                if (isPlayoff) {
+                    if ((result.willPenalties.length > 0) && (result.willPenalties === prediction.willPenalties)) {
+                        points++;
+                    }
+                    if ((result.winnerTeamCode.length === 3) && (result.winnerTeamCode === prediction.winnerTeamCode)) {
+                        points++;
+                    }
+                    if (pg1 === pg2) {
+                        const currentMatch = playoffMatches.find(match => match.matchId === prediction.matchId);
+                        if (prediction.winnerTeamCode.length === 3) {
+                            if (prediction.winnerTeamCode === currentMatch.t1 || prediction.winnerTeamCode === currentMatch.t2) {
+                                points++;
+                            }
+                        }
+                    }
+                }
+                prediction.points = points;
+                allPoints += points;
             }
         });
+
+        return allPoints;
+    }
+
+    (async () => {
+        const data = await (await sendPostRequest('getGroupAndPlayoffData')).json();
+        let { users, groupMatches, groupPredictions, groupResults, playoffMatches, playoffPredictions, playoffResults } = data;
+
+        groupMatches.sort((a, b) => a.matchId - b.matchId);
+        playoffMatches.sort((a, b) => a.matchId - b.matchId);
+
+        users = users.map(user => {
+            user.groupPredictions = groupPredictions.filter(prediction => user.userId === prediction.userId);
+            user.playoffPredictions = playoffPredictions.filter(prediction => user.userId === prediction.userId);
+            return user;
+        });
+
+        users.forEach(user => {
+            user.groupPoints = calculatePoints(user.groupPredictions, groupResults, false);
+            user.playoffPoints = calculatePoints(user.playoffPredictions, playoffResults, true, playoffMatches);
+            user.allPoints = user.groupPoints + user.playoffPoints;
+        });
+
+        users.sort((a, b) => b.allPoints - a.allPoints);
+
+        const currentUser = users.find((user) => user.username === userCookie.username);
+
+        const tableBody = mainEl.querySelector('.table-body');
+
+        users.forEach(user => {
+            tableBody.insertAdjacentHTML('beforeend', `
+                <tr ${user.userId === currentUser.userId ? 'class="current-user"' : ''}>
+                    <td>${user.name_tr}</td>
+                    <td>${user.allPoints}</td>
+                    <td>${user.groupPoints}</td>
+                    <td>${user.playoffPoints}</td>
+                </tr>
+            `);
+        });
+
+        mainEl.classList.remove('hidden');
+
         stopLoader();
     })();
 
