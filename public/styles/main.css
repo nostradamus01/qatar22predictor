@@ -348,3 +348,11 @@ main.main {
 .points-table tbody {
     font-size: 18px;
 }
+
+.inner-loader {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

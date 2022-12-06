@@ -1,4 +1,4 @@
-function PointsPage() {
+function PointsPage(callback) {
     const mainEl = document.createElement('div');
     mainEl.classList.add('points-container', 'hidden');
 
@@ -102,8 +102,6 @@ function PointsPage() {
 
         mainEl.classList.remove('hidden');
 
-        stopLoader();
+        callback(mainEl);
     })();
-
-    return mainEl;
 }

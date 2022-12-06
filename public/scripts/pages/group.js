@@ -1,4 +1,4 @@
-function GroupPage() {
+function GroupPage(callback) {
     const mainEl = document.createElement('div');
     mainEl.classList.add('.cards-container');
 
@@ -177,20 +177,7 @@ function GroupPage() {
                 });
             }
         };
-        let timeNow = new Date();
-        timeNow = timeNow.getTime();
-        const cards = mainEl.querySelectorAll('.card');
-        let cardsLenght = cards.length;
-        let currentMatchCard = cards[cards.length - 1];
-        for (let i = 0; i < cardsLenght; i++) {
-            if (timeNow < +cards[i].id) {
-                currentMatchCard = cards[i - 2];
-                break;
-            }
-        }
-        currentMatchCard.scrollIntoView();
-        stopLoader();
-    })();
 
-    return mainEl;
+        callback(mainEl);
+    })();
 }

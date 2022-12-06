@@ -32,11 +32,28 @@ function MainPage() {
         contentCmp.insertAdjacentElement('afterbegin', content);
     }
 
+    const addLoader = () => {
+        const loader = `
+            <div class="inner-loader">
+                <div class="loader-cmp">
+                    <div class="circle cyan"></div>
+                    <div class="circle magenta"></div>
+                    <div class="circle yellow"></div>
+                </div>
+            </div>
+        `;
+        const contentCmp = mainEl.querySelector('.content');
+        contentCmp.innerHTML = '';
+        contentCmp.insertAdjacentHTML('afterbegin', loader);
+    }
+
     (async () => {
+        addLoader();
         const navItems = mainEl.querySelectorAll('.nav-item');
         navItems.forEach((item) => {
             item.addEventListener('click', () => {
                 if (!item.classList.contains('active')) {
+                    addLoader();
                     navItems.forEach(nav => {
                         nav.classList.remove('active');
                     });
@@ -45,21 +62,28 @@ function MainPage() {
                     const pageName = item.dataset.goto;
                     switch (pageName) {
                         case 'groups':
-                            page = GroupPage();
+                            GroupPage((el) => {
+                                loadContent(el);
+                            });
                             break;
                         case 'playoff':
-                            page = PlayoffPage();
+                            PlayoffPage((el) => {
+                                loadContent(el);
+                            });
                             break;
                         case 'points':
-                            page = PointsPage();
+                            PointsPage((el) => {
+                                loadContent(el);
+                            });
                             break;
                     }
-                    loadContent(page);
                 }
             });
         });
 
-        loadContent(PlayoffPage());
+        PlayoffPage((el) => {
+            loadContent(el);
+        });
 
         const logoutBtn = mainEl.querySelector('.logout-btn');
         if (logoutBtn) {

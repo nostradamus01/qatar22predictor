@@ -1,4 +1,4 @@
-function PlayoffPage() {
+function PlayoffPage(callback) {
     const mainEl = document.createElement('div');
     mainEl.classList.add('cards-container');
 
@@ -217,9 +217,21 @@ function PlayoffPage() {
                 obj['willPenalties'] = e.target.checked ? 'yes' : 'no';
                 await sendPostRequest('setPrediction', obj);
             })
-        })
-        stopLoader();
-    })();
+        });
 
-    return mainEl;
+        callback(mainEl);
+
+        let timeNow = new Date();
+        timeNow = timeNow.getTime();
+        const cards = mainContainer.querySelectorAll('.card');
+        let cardsLenght = cards.length;
+        let currentMatchCard = cards[cards.length - 1];
+        for (let i = 2; i < cardsLenght; i++) {
+            if (timeNow < +cards[i].dataset.time) {
+                currentMatchCard = cards[i - 2];
+                break;
+            }
+        }
+        currentMatchCard.scrollIntoView();
+    })();
 }
