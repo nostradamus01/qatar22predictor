@@ -118,7 +118,7 @@ function PlayoffPage(callback) {
             const currentMatchResult = allResults.find(result => result.matchId === currentPrediction.matchId);
             const finished = currentMatchResult.finished === 'yes';
             const timeNow = new Date();
-            const hasAdditionalInfo = currentPrediction.g1 && (currentPrediction.g1 === currentPrediction.g2);
+            const hasAdditionalInfo = (currentPrediction.g1 || currentPrediction.g1 === 0) && (currentPrediction.g1 === currentPrediction.g2);
 
             const matchTime = new Date(match.date);
             const matchData = {
